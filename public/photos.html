@@ -1,0 +1,30 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Event photos</title><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,500&family=Great+Vibes&display=swap" rel="stylesheet">
+<style>*{box-sizing:border-box}body{margin:0;background:#9ba46f;font-family:"Cormorant Garamond",Georgia,serif;color:#4a2a1a;min-height:100svh;padding:20px 14px 40px}
+.card{max-width:640px;margin:0 auto;background:#fbf0e1;border:2px solid #b8892e;border-radius:22px;padding:26px 18px;text-align:center;box-shadow:0 8px 30px rgba(40,50,20,.3)}
+h1{font:400 44px/1.1 "Great Vibes",cursive;color:#8a1c2b;margin:0 0 6px}p{font-size:20px;margin:6px 0}
+.btn{display:inline-block;margin-top:14px;padding:13px 26px;background:#8a1c2b;color:#fff3dc;font:700 19px "Cormorant Garamond",serif;border:0;border-radius:40px;text-decoration:none;cursor:pointer}
+.btn.o{background:transparent;color:#8a1c2b;border:1.5px solid #8a1c2b}.btn:focus-visible{outline:3px solid #b8892e;outline-offset:3px}</style>
+<style>.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin:18px auto 0;max-width:900px}
+.it{background:#fbf0e1;border:2px solid #b8892e;border-radius:12px;overflow:hidden;font-size:15px}
+.it img,.it video{display:block;width:100%;aspect-ratio:1;object-fit:cover}.it a,.it button{display:block;padding:7px;color:#8a1c2b;font-weight:700;text-decoration:none;background:none;border:0;width:100%;font:700 16px "Cormorant Garamond",serif;cursor:pointer}</style></head><body>
+<div class="card"><h1>Event Photos</h1><p>Moments from our Gruhapravesham</p>
+<a class="btn" id="ph" href="#" hidden target="_blank" rel="noopener">Photographer's album</a>
+<p id="st">Loading guest photos…</p></div>
+<div class="grid" id="g"></div>
+<script src="config.js"></script>
+<script>
+var admin=new URLSearchParams(location.search).get('admin');
+if(CFG.PHOTOGRAPHER_ALBUM_URL){var a=document.getElementById('ph');a.href=CFG.PHOTOGRAPHER_ALBUM_URL;a.hidden=false}
+fetch('/api/list').then(r=>r.json()).then(function(items){
+  var g=document.getElementById('g'),st=document.getElementById('st');
+  st.textContent=items.length?'Guest photos ('+items.length+')':'No guest photos yet – check back soon.';
+  items.forEach(function(it){
+    var d=document.createElement('div');d.className='it';
+    var vid=/\.(mp4|mov)(\?|$)/i.test(it.url);
+    d.innerHTML=(vid?'<video src="'+it.url+'" controls preload="metadata" playsinline></video>':'<img loading="lazy" src="'+it.url+'" alt="Guest photo">')+'<a href="'+it.url+'?download=1">Download</a>';
+    if(admin){var b=document.createElement('button');b.textContent='Delete';b.onclick=function(){if(confirm('Delete this photo?'))fetch('/api/delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:it.url,key:admin})}).then(function(){d.remove()})};d.appendChild(b)}
+    g.appendChild(d);
+  });
+}).catch(function(){document.getElementById('st').textContent='Could not load photos right now.'});
+</script></body></html>

@@ -1,0 +1,31 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Share your photos</title><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,500&family=Great+Vibes&display=swap" rel="stylesheet">
+<style>*{box-sizing:border-box}body{margin:0;background:#9ba46f;font-family:"Cormorant Garamond",Georgia,serif;color:#4a2a1a;min-height:100svh;padding:20px 14px 40px}
+.card{max-width:640px;margin:0 auto;background:#fbf0e1;border:2px solid #b8892e;border-radius:22px;padding:26px 18px;text-align:center;box-shadow:0 8px 30px rgba(40,50,20,.3)}
+h1{font:400 44px/1.1 "Great Vibes",cursive;color:#8a1c2b;margin:0 0 6px}p{font-size:20px;margin:6px 0}
+.btn{display:inline-block;margin-top:14px;padding:13px 26px;background:#8a1c2b;color:#fff3dc;font:700 19px "Cormorant Garamond",serif;border:0;border-radius:40px;text-decoration:none;cursor:pointer}
+.btn.o{background:transparent;color:#8a1c2b;border:1.5px solid #8a1c2b}.btn:focus-visible{outline:3px solid #b8892e;outline-offset:3px}</style>
+<style>#list{margin-top:14px;text-align:left;font-size:17px}#list div{padding:6px 0;border-bottom:1px solid #e6d6b4}.ok{color:#2f6a2a}.er{color:#a11}</style></head><body>
+<div class="card"><h1>Share your photos</h1>
+<p>Took a photo or video at the Gruhapravesham? Add it here so the family can see it.</p>
+<input id="f" type="file" accept="image/*,video/*" multiple hidden>
+<button class="btn" id="pick">Choose photos / videos</button>
+<div id="list" aria-live="polite"></div>
+<a class="btn o" id="see" href="photos.html">See all photos</a></div>
+<script type="module">
+import { upload } from 'https://esm.sh/@vercel/blob@1/client';
+const key=new URLSearchParams(location.search).get('k')||'';
+const f=document.getElementById('f'),list=document.getElementById('list');
+document.getElementById('pick').onclick=()=>f.click();
+f.onchange=async()=>{
+  for(const file of f.files){
+    const row=document.createElement('div');row.textContent=file.name+' – uploading…';list.prepend(row);
+    try{
+      await upload('guests/'+file.name.replace(/[^\w.\-]+/g,'_'),file,{access:'public',handleUploadUrl:'/api/upload',clientPayload:key,multipart:file.size>10e6,
+        onUploadProgress:p=>row.textContent=file.name+' – '+Math.round(p.percentage)+'%'});
+      row.textContent=file.name+' – uploaded, thank you!';row.className='ok';
+    }catch(e){row.textContent=file.name+' – failed: '+e.message;row.className='er'}
+  }
+  f.value='';
+};
+</script></body></html>
